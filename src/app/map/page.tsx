@@ -1,93 +1,89 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Box, Textarea, Button, Text, Spinner, VStack, Heading, useToast } from '@chakra-ui/react';
+import { useChat } from "@/components/ChatContext";
+import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
+import { useState } from "react";
 
-export default function Home() {
-  const [inputText, setInputText] = useState('');
-  const [responseText, setResponseText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const toast = useToast();
+import {AzureMap, AzureMapsProvider, IAzureMapOptions} from 'react-azure-maps'
+import {AuthenticationType} from 'azure-maps-control'
 
-  const handleGenerate = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/temp_openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: inputText }),
-      });
+// const option: IAzureMapOptions = {
+//     authOptions: {
+//         authType: AuthenticationType.subscriptionKey,
+//         subscriptionKey: process.env.AZURE_MAPS_KEY!
+//     },
+// }
 
-      const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error.message);
-      }
-      setResponseText(data.choices[0].text);
-    } catch (error: any) {
-      console.error('Error generating response:', error);
-      setResponseText('Error generating response.');
-      toast({
-        title: 'Error',
-        description: error.message || 'Something went wrong!',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+// const DefaultMap: React.FC = () => (
+//     <div style={{height: '300px'}}>
+//         <AzureMapsProvider>
+//             <AzureMap options={option}>
+//             </AzureMap>
+//         </AzureMapsProvider>
+//     </div>
+// )
+
+export const MapPage: React.FC = () => {
+  const { chat, travelDetails, sendMessage } = useChat();
+
+  const [input, setInput] = useState("");
+
+  const onSend = () => {
+    if (input.trim()) {
+      sendMessage(input.trim());
+      setInput("");
     }
-    setLoading(false);
   };
 
   return (
-    <Box maxW="lg" mx="auto" p={5}>
-      <VStack spacing={4} align="stretch">
-        <Heading as="h1" size="xl" textAlign="center">
-          Azure OpenAI with Next.js
-        </Heading>
+    <Box position="relative" w="100vw" h="100vh">
+      {/* Full-screen Map component */}
+      <Box position="absolute" top={0} left={0} w="100%" h="100%">
+        <div style={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
+          <div style={{width: "fit-content"}}>
+            <pre>{JSON.stringify(travelDetails, null, 2)}</pre>
+          </div>
+        </div>
+      </Box>
 
-        <Textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Enter your prompt here"
-          size="md"
-          minHeight="150px"
-          borderColor="gray.300"
-        />
-
-        <Button
-          onClick={handleGenerate}
-          colorScheme="blue"
-          isLoading={loading}
-          loadingText="Generating..."
-          size="lg"
-        >
-          Generate Response
-        </Button>
-
-        {loading && (
-          <Box display="flex" justifyContent="center" mt={4}>
-            <Spinner size="lg" />
-          </Box>
-        )}
-
-        <Box mt={4}>
-          <Heading as="h3" size="md">
-            Response:
-          </Heading>
-          <Text
-            mt={2}
-            p={4}
-            borderRadius="md"
-            borderWidth="1px"
-            borderColor="gray.300"
-            backgroundColor="gray.50"
-            whiteSpace="pre-wrap"
-          >
-            {responseText}
-          </Text>
+      {/* Chat Box */}
+      <Box
+        position="absolute"
+        top={4}
+        right={4}
+        w={{ base: "90%", md: "300px" }}
+        bg="white"
+        p={4}
+        boxShadow="md"
+        borderRadius="md"
+      >
+        <VStack gap={2} maxH="300px" overflowY="auto">
+          {chat.map((msg, index) => (
+            msg.role === "user" ? (
+              <Text key={index} bg="blue.200" alignSelf="flex-end" p={2} marginLeft={8} borderRadius="md">
+                {msg.content}
+              </Text>
+            ) : (
+              <Text key={index} bg="gray.200" alignSelf="flex-start" p={2} marginRight={8} borderRadius="md">
+                {msg.content}
+              </Text>
+            )
+          ))}
+        </VStack>
+        <Box display="flex" mt={2}>
+          <Input
+            flex={1}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <Button ml={2} onClick={onSend} colorScheme="blue">
+            Send
+          </Button>
         </Box>
-      </VStack>
+      </Box>
     </Box>
   );
 }
+
+export default MapPage;
