@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
+import Head from "next/head"; // Import Head
 
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
@@ -19,7 +20,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-white font-sans">
-      {/* Navbar */}
+      <Head>
+        <title>PlanMyTrip.ai: Plan Smart, Travel Better</title> {/* Updated title */}
+        <meta name="description" content="Plan your travels smartly with PlanMyTrip.ai." /> {/* Optional for SEO */}
+      </Head>
+
       <nav
         className={`fixed top-0 left-0 w-full z-50 backdrop-blur-lg transition-all duration-300 ${
           scrolled ? "bg-black/70 shadow-lg" : "bg-black/40"
@@ -30,7 +35,6 @@ export default function Home() {
             PlanMyTrip.ai
           </h1>
 
-          {/* Desktop Nav */}
           <ul className="hidden md:flex space-x-10 text-lg font-light">
             <li>
               <Link href="/" className="hover:text-gray-400 transition">
@@ -38,8 +42,8 @@ export default function Home() {
               </Link>
             </li>
             <li>
-              <Link href="/about" className="hover:text-gray-400 transition">
-                About
+              <Link href="/MainScreen" className="hover:text-gray-400 transition">
+                Try it out!
               </Link>
             </li>
             <li>
@@ -52,13 +56,11 @@ export default function Home() {
             </li>
           </ul>
 
-          {/* Mobile Menu Button */}
           <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
 
-        {/* Mobile Dropdown */}
         {isOpen && (
           <motion.ul
             initial={{ opacity: 0, y: -10 }}
@@ -72,8 +74,8 @@ export default function Home() {
               </Link>
             </li>
             <li>
-              <Link href="/about" className="block py-2 text-lg">
-                About
+              <Link href="/MainScreen" className="block py-2 text-lg">
+                Try it out!
               </Link>
             </li>
             <li>
@@ -113,15 +115,25 @@ export default function Home() {
           </motion.h1>
         </div>
 
-        <Link
-          href="/loginorregister"
-          className="mt-30 bg-white text-black px-6 py-3 rounded-full text-lg font-medium hover:bg-gray-300 transition duration-200 shadow-md hover:shadow-lg"
+        {/* Get Started Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 2.5 }}
+          className="mt-8"
         >
-          Get Started
-        </Link>
+          <Link href="/loginorregister">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-white text-black px-8 py-3 rounded-full text-lg font-semibold hover:bg-gray-200 transition shadow-lg hover:shadow-xl"
+            >
+              Get Started
+            </motion.button>
+          </Link>
+        </motion.div>
       </main>
 
-      {/* Footer */}
       <footer className="text-center py-6 text-gray-500 text-sm">
         © {new Date().getFullYear()} PlanMyTrip.ai. All rights reserved.
       </footer>

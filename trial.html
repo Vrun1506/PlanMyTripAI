@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Hotel Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .destination {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .destination img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Hotel Search</h1>
+<form id="searchForm">
+    <label for="destination">Enter your destination:</label>
+    <input type="text" id="destination" name="destination" required>
+    <button type="submit">Search</button>
+</form>
+
+<div id="results"></div>
+
+<script>
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting the traditional way
+        const destination = document.getElementById('destination').value;
+        fetchHotels(destination);
+    });
+
+    function fetchHotels(query) {
+        const xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener('readystatechange', function () {
+            if (this.readyState === this.DONE) {
+                const response = JSON.parse(this.responseText);
+                displayResults(response.data);
+            }
+        });
+
+        xhr.open('GET', `https://booking-com15.p.rapidapi.com/api/v1/hotels/searchDestination?query=${query}`);
+        xhr.setRequestHeader('x-rapidapi-key', 'c8a32294f3mshb7fed7976b6b884p1bf560jsn8ce8146862e7');
+        xhr.setRequestHeader('x-rapidapi-host', 'booking-com15.p.rapidapi.com');
+
+        xhr.send();
+    }
+
+    function displayResults(destinations) {
+        const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = ''; // Clear previous results
+
+        if (!destinations.length) {
+            resultsDiv.innerHTML = '<p>No results found.</p>';
+            return;
+        }
+
+        destinations.forEach(destination => {
+            const destinationDiv = document.createElement('div');
+            destinationDiv.classList.add('destination');
+
+            const img = document.createElement('img');
+            img.src = destination.image_url; // Adjust this based on your API response structure
+            img.alt = destination.label;
+
+            const title = document.createElement('h2');
+            title.textContent = destination.label;
+
+            const details = document.createElement('p');
+            details.textContent = `City: ${destination.city_name}, Country: ${destination.country}`;
+
+            const hotelCount = document.createElement('p');
+            hotelCount.textContent = `Number of Hotels: ${destination.nr_hotels}`;
+
+            destinationDiv.appendChild(img);
+            destinationDiv.appendChild(title);
+            destinationDiv.appendChild(details);
+            destinationDiv.appendChild(hotelCount);
+            resultsDiv.appendChild(destinationDiv);
+        });
+    }
+</script>
+
+</body>
+</html>
