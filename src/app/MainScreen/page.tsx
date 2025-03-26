@@ -15,6 +15,66 @@ export default function MainScreen() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  //Whisper component
+  const SpeechAgent = async () => {
+    try {
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      const audioChunks: Blob[] = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+        // Send the audio Blob to Whisper API
+        const formData = new FormData();
+        formData.append("file", audioBlob, "audio.webm");
+        formData.append("model", "whisper-1");
+
+        try {
+          const response = await fetch(
+            "https://alric-m8pwns3d-swedencentral.cognitiveservices.azure.com/openai/deployments/whisper/audio/translations?api-version=2024-06-01",
+            {
+              method: "POST",
+              headers: {
+                "api-key": "297BZ3Ty0wU6T2e0aCIPtYYSbzWyxL9eYjZBNszhVLUzP7bVlsrGJQQJ99BCACfhMk5XJ3w3AAAAACOG1udE", // Replace with your Azure API key
+              },
+              body: formData,
+            }
+          );
+
+          if (!response.ok) {
+            const errorDetails = await response.text();
+            console.error("Error details:", errorDetails);
+            throw new Error("Failed to transcribe audio");
+          }
+
+          const data = await response.json();
+          setInput(data.text); // Update the input field with the transcribed text
+          console.log("Transcription:", data.text);
+        } catch (error) {
+          console.error("Error transcribing audio:", error);
+        }
+      };
+
+      mediaRecorder.start();
+
+      // Stop recording after 5 seconds
+      setTimeout(() => {
+        mediaRecorder.stop();
+        stream.getTracks().forEach((track) => track.stop());
+      }, 10000); // Adjust the duration as needed
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
@@ -181,6 +241,7 @@ export default function MainScreen() {
                   alt="Voice"
                   width={32}
                   height={32}
+                  onClick={SpeechAgent}
                 />
               </button>
               <motion.button
