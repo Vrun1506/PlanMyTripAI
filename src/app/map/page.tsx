@@ -1,31 +1,22 @@
 "use client";
 
 import { useChat } from "@/components/ChatContext";
-import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 
-import {AzureMap, AzureMapsProvider, IAzureMapOptions} from 'react-azure-maps'
-import {AuthenticationType} from 'azure-maps-control'
-
-// const option: IAzureMapOptions = {
-//     authOptions: {
-//         authType: AuthenticationType.subscriptionKey,
-//         subscriptionKey: process.env.AZURE_MAPS_KEY!
-//     },
-// }
-
-// const DefaultMap: React.FC = () => (
-//     <div style={{height: '300px'}}>
-//         <AzureMapsProvider>
-//             <AzureMap options={option}>
-//             </AzureMap>
-//         </AzureMapsProvider>
-//     </div>
-// )
+// Create a wrapper component with disabled SSR
+const Map = dynamic(() => import("@/components/MapComponent"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex flex-col items-center justify-center h-screen gap-2">
+      <span className="text-xl">Loading map...</span>
+      <div className="animate-spin h-6 w-6 border-4 border-gray-300 border-t-blue-500 rounded-full"></div>
+    </div>
+  ),
+});
 
 export const MapPage: React.FC = () => {
-  const { chat, travelDetails, sendMessage } = useChat();
-
+  const { chat, sendMessage } = useChat();
   const [input, setInput] = useState("");
 
   const onSend = () => {
@@ -36,54 +27,41 @@ export const MapPage: React.FC = () => {
   };
 
   return (
-    <Box position="relative" w="100vw" h="100vh">
+    <div className="relative w-screen h-screen">
       {/* Full-screen Map component */}
-      <Box position="absolute" top={0} left={0} w="100%" h="100%">
-        <div style={{width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}>
-          <div style={{width: "fit-content"}}>
-            <pre>{JSON.stringify(travelDetails, null, 2)}</pre>
-          </div>
-        </div>
-      </Box>
+      <div className="absolute inset-0">
+        <Map points={[[-50, 47.6], [-74.006, 40.7128], [139.6917, 35.6895], [2.3522, 48.8566]]} />
+      </div>
 
       {/* Chat Box */}
-      <Box
-        position="absolute"
-        top={4}
-        right={4}
-        w={{ base: "90%", md: "300px" }}
-        bg="white"
-        p={4}
-        boxShadow="md"
-        borderRadius="md"
-      >
-        <VStack gap={2} maxH="300px" overflowY="auto">
+      <div className="absolute top-4 right-4 w-11/12 md:w-72 bg-white p-4 shadow-md rounded-md">
+        <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
           {chat.map((msg, index) => (
-            msg.role === "user" ? (
-              <Text key={index} bg="blue.200" alignSelf="flex-end" p={2} marginLeft={8} borderRadius="md">
-                {msg.content}
-              </Text>
-            ) : (
-              <Text key={index} bg="gray.200" alignSelf="flex-start" p={2} marginRight={8} borderRadius="md">
-                {msg.content}
-              </Text>
-            )
+            <div
+              key={index}
+              className={`p-2 rounded-md max-w-xs ${msg.role === "user" ? "bg-blue-200 self-end ml-8" : "bg-gray-200 self-start mr-8"}`}
+            >
+              {msg.content}
+            </div>
           ))}
-        </VStack>
-        <Box display="flex" mt={2}>
-          <Input
-            flex={1}
+        </div>
+        <div className="flex mt-2">
+          <input
+            className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
           />
-          <Button ml={2} onClick={onSend} colorScheme="blue">
+          <button
+            className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={onSend}
+          >
             Send
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+          </button>
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
 export default MapPage;
