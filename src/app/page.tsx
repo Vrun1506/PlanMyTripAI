@@ -4,9 +4,21 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
+import {
+  Box,
+  Flex,
+  Heading,
+  Button,
+  Text,
+  HStack,
+  VStack,
+  Link as ChakraLink,
+  useDisclosure,
+  Container,
+} from "@chakra-ui/react";
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, onToggle } = useDisclosure();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -18,113 +30,187 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-black text-white font-sans">
+    <Box minHeight="100vh" display="flex" flexDirection="column" bg="black" color="white">
       {/* Navbar */}
-      <nav
-        className={`fixed top-0 left-0 w-full z-50 backdrop-blur-lg transition-all duration-300 ${
-          scrolled ? "bg-black/70 shadow-lg" : "bg-black/40"
-        } border-b border-white/10`}
+      <Box
+        as="nav"
+        position="fixed"
+        top="0"
+        left="0"
+        width="100%"
+        zIndex="50"
+        backdropFilter="blur(16px)"
+        transition="all 0.3s"
+        bg={scrolled ? "rgba(0, 0, 0, 0.7)" : "rgba(0, 0, 0, 0.4)"}
+        boxShadow={scrolled ? "lg" : "none"}
+        borderBottom="1px solid"
+        borderColor="whiteAlpha.100"
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-wide">
-            PlanMyTrip.ai
-          </h1>
+        <Container maxW="7xl" mx="auto">
+          <Flex justify="space-between" align="center" px="6" py="4">
+            <Heading fontSize={{ base: "2xl", md: "3xl" }} fontWeight="semibold" letterSpacing="wide">
+              PlanMyTrip.ai
+            </Heading>
 
-          {/* Desktop Nav */}
-          <ul className="hidden md:flex space-x-10 text-lg font-light">
-            <li>
-              <Link href="/" className="hover:text-gray-400 transition">
+            {/* Desktop Nav */}
+            <HStack gap="10" fontSize="lg" fontWeight="light" display={{ base: "none", md: "flex" }}>
+              <Link href="/" color="white">
                 Home
               </Link>
-            </li>
-            <li>
-              <Link href="/about" className="hover:text-gray-400 transition">
+              <Link href="/" color="white">
                 About
               </Link>
-            </li>
-            <li>
-              <Link
-                href="/loginorregister"
-                className="bg-white text-black px-6 py-2 rounded-full font-medium hover:bg-gray-300 transition shadow-md hover:shadow-lg"
+              <Button
+                bg="white"
+                color="black"
+                px="6"
+                py="2"
+                borderRadius="full"
+                fontWeight="medium"
+                _hover={{ bg: "gray.300" }}
+                transition="all 0.2s"
+                boxShadow="md"
               >
-                Sign Up / Log In
-              </Link>
-            </li>
-          </ul>
+                <Link href="/loginorregister">
+                  Sign Up / Log In
+                </Link>
+              </Button>
+            </HStack>
 
-          {/* Mobile Menu Button */}
-          <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
+            {/* Mobile Menu Button */}
+            <Box display={{ base: "block", md: "none" }}>
+              <Button variant="ghost" onClick={onToggle} p="2">
+                {isOpen ? <X size={28} /> : <Menu size={28} />}
+              </Button>
+            </Box>
+          </Flex>
 
-        {/* Mobile Dropdown */}
-        {isOpen && (
-          <motion.ul
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="md:hidden flex flex-col items-center bg-black text-white text-center py-6 space-y-4"
-          >
-            <li>
-              <Link href="/" className="block py-2 text-lg">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link href="/about" className="block py-2 text-lg">
-                About
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/loginorregister"
-                className="block py-3 bg-white text-black rounded-full px-6 mx-6 text-lg font-medium shadow-md hover:bg-gray-300 transition"
+          {/* Mobile Dropdown */}
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <VStack
+                display={{ base: "flex", md: "none" }}
+                bg="black"
+                color="white"
+                textAlign="center"
+                py="6"
+                gap="4"
               >
-                Sign Up / Log In
-              </Link>
-            </li>
-          </motion.ul>
-        )}
-      </nav>
+                <ChakraLink as={Link} href="/" py="2" fontSize="lg" display="block">
+                  Home
+                </ChakraLink>
+                <ChakraLink as={Link} href="/about" py="2" fontSize="lg" display="block">
+                  About
+                </ChakraLink>
+                <Button
+                  as={Link}
+                  href="/loginorregister"
+                  bg="white"
+                  color="black"
+                  borderRadius="full"
+                  px="6"
+                  py="3"
+                  mx="6"
+                  fontSize="lg"
+                  fontWeight="medium"
+                  boxShadow="md"
+                  _hover={{ bg: "gray.300" }}
+                  transition="all 0.2s"
+                  display="block"
+                >
+                  Sign Up / Log In
+                </Button>
+              </VStack>
+            </motion.div>
+          )}
+        </Container>
+      </Box>
 
       {/* Hero Section */}
-      <main className="relative flex flex-col items-center justify-center flex-grow text-center px-6 pt-32">
+      <Box
+        as="main"
+        position="relative"
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        flexGrow="1"
+        textAlign="center"
+        px="6"
+        pt="32"
+      >
         {/* Background glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent blur-3xl opacity-30" />
+        <Box
+          position="absolute"
+          inset="0"
+          bgGradient="linear(to-b, whiteAlpha.50, transparent)"
+          filter="blur(96px)"
+          opacity="0.3"
+        />
 
-        <div className="flex flex-col md:flex-row gap-4 md:gap-8 items-center">
-          <motion.h1
+        <Flex flexDirection={{ base: "column", md: "row" }} gap={{ base: "4", md: "8" }} alignItems="center">
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight"
           >
-            Plan Smart.
-          </motion.h1>
+            <Heading
+              fontSize={{ base: "5xl", md: "7xl" }}
+              fontWeight="extrabold"
+              color="white"
+              lineHeight="tight"
+              letterSpacing="tight"
+            >
+              Plan Smart.
+            </Heading>
+          </motion.div>
 
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.5 }}
-            className="text-5xl md:text-7xl font-extrabold text-white leading-tight tracking-tight"
           >
-            Travel Better.
-          </motion.h1>
-        </div>
+            <Heading
+              fontSize={{ base: "5xl", md: "7xl" }}
+              fontWeight="extrabold"
+              color="white"
+              lineHeight="tight"
+              letterSpacing="tight"
+            >
+              Travel Better.
+            </Heading>
+          </motion.div>
+        </Flex>
 
-        <Link
+        <Button
+          as={Link}
           href="/loginorregister"
-          className="mt-30 bg-white text-black px-6 py-3 rounded-full text-lg font-medium hover:bg-gray-300 transition duration-200 shadow-md hover:shadow-lg"
+          mt="60px"
+          bg="white"
+          color="black"
+          px="6"
+          py="3"
+          borderRadius="full"
+          fontSize="lg"
+          fontWeight="medium"
+          _hover={{ bg: "gray.300", boxShadow: "lg" }}
+          transition="all 0.2s"
+          boxShadow="md"
         >
           Get Started
-        </Link>
-      </main>
+        </Button>
+      </Box>
 
       {/* Footer */}
-      <footer className="text-center py-6 text-gray-500 text-sm">
-        © {new Date().getFullYear()} PlanMyTrip.ai. All rights reserved.
-      </footer>
-    </div>
+      <Box as="footer" textAlign="center" py="6">
+        <Text color="gray.500" fontSize="sm">
+          © {new Date().getFullYear()} PlanMyTrip.ai. All rights reserved.
+        </Text>
+      </Box>
+    </Box>
   );
 }

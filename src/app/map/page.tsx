@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@/components/ChatContext";
-import { Box, Input, Button, VStack, Text } from "@chakra-ui/react";
+import { Box, Input, Button, VStack, Text, Spinner } from "@chakra-ui/react";
 import { useState } from "react";
 
 import dynamic from 'next/dynamic';
@@ -11,7 +11,19 @@ const Map = dynamic(
   () => import('@/components/MapComponent'), // Create this file next
   { 
     ssr: false,
-    loading: () => <div>Loading map...</div>
+    loading: () => (
+      <Box 
+        display="flex" 
+        alignItems="center" 
+        justifyContent="center" 
+        height="100vh"
+        flexDirection="column"
+        gap={2}
+      >
+        <Text fontSize="xl">Loading map...</Text>
+        <Spinner/>
+      </Box>
+    )
   }
 );
 
@@ -31,7 +43,7 @@ export const MapPage: React.FC = () => {
     <Box position="relative" w="100vw" h="100vh">
       {/* Full-screen Map component */}
       <Box position="absolute" top={0} left={0} w="100%" h="100%">
-        <Map />
+        <Map points={[[-50, 47.6], [-74.006, 40.7128], [139.6917, 35.6895], [2.3522, 48.8566]]}/>
       </Box>
 
       {/* Chat Box */}

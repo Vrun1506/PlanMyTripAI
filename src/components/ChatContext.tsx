@@ -16,12 +16,11 @@ export interface TravelDetails {
 
     specialRequirements: string[] | null;
     preferredLanguage: string | null;
-    transportation: ("train" | "flight" | "car" | "bus" | "cruise")[] | null;
+    transportation: ("flight" | "car rental" | "taxi")[] | null;
 
     accommodationStarRating: number | null;
     accommodation: {
         location: string | null;
-        type: "hotel" | "hostel" | "airbnb" | "bnb" | "resort" | null;
     }[];
 
     travelers: {
@@ -104,4 +103,3 @@ export function useChat() {
     }
     return context;
 }
-
