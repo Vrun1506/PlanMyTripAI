@@ -1,12 +1,12 @@
 import { AzureOpenAI, AzureClientOptions } from "openai";
 
 const AZURE_OPENAI_KEY = process.env.AZURE_OPENAI_KEY!;
-const AZURE_API_ENDPOINT = "https://alric-m8a7ll8r-eastus2.openai.azure.com/";
+const AZURE_API_ENDPOINT =  "https://alric-m8a7ll8r-eastus2.openai.azure.com/";
 
 export async function getGenerativeResponse(message: string): Promise<string> {
   // Initialize the DefaultAzureCredential
-  const apiVersion = "2024-05-01-preview";
-  const deployment = "gpt-4o-mini-hackathon";
+  const apiVersion = "2024-02-15-preview";
+  const deployment = "gpt-4o";
 
   const config: AzureClientOptions = {
     endpoint: AZURE_API_ENDPOINT,
