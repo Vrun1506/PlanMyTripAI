@@ -1,22 +1,16 @@
 import { getGenerativeResponse } from '@/chat';
 import { NextResponse } from 'next/server';
-import { blankTravelDetails, TravelDetails } from '@/components/ChatContext';
 
 export async function POST(req: Request) {
-  const { message, travelDetails } = await req.json() as { message: string, travelDetails: TravelDetails };
+  const { message } = await req.json() as { message: string };
 
   const response = await getGenerativeResponse(`
     The user has provided the following message:
     
     ${message}
-    
-
-    The user also has the current travel plan:
-
-    ${JSON.stringify({ ...blankTravelDetails, ...travelDetails })}
    
 
-    Sitcking to this JSON schema, modify the travel plan to match the user's request. Respond in JSON only.
+    Sitcking to this JSON schema, create a travel plan to match the user's request. Respond in JSON only.
 
     {
       // The user's travel details (null values represent unknowns)
