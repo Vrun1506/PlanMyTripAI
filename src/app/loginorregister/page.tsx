@@ -4,6 +4,8 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
+import { auth0Config } from "../auth/auth0-config";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 const images: string[] = [
   "/image1.jpg", "/image2.jpg", "/image3.jpg", "/image4.jpg", "/image5.jpg", 
@@ -12,18 +14,94 @@ const images: string[] = [
   "/image16.jpg", "/image17.jpg", "/image18.jpg", "/image19.jpg", "/image20.jpg"
 ];
 
+const handleLogin = async (email: string, password: string, router: ReturnType<typeof useRouter>, setError: React.Dispatch<React.SetStateAction<string | null>>) => {
+  console.log("Login Function - Email:", email);
+  console.log("Login Function - Password:", password);
+
+  try {
+    const response = await fetch(`https://planmytripai.uk.auth0.com/oauth/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grant_type: "password",
+        username: email,
+        password: password,
+        client_id: auth0Config.clientId,
+        connection: "Username-Password-Authentication",
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Login Error Details:", errorData);
+      setError("Invalid Email or Password");
+      throw new Error("Login failed");
+    }
+
+    const data = await response.json();
+    console.log("Access Token:", data.access_token);
+
+    // Redirect to MainScreen after successful login
+    router.push("/MainScreen");
+  } catch (error) {
+    console.error("Login Error:", error);
+  }
+};
+
+const handleRegister = async (email: string, password: string) => {
+  try {
+    const response = await fetch(`https://planmytripai.uk.auth0.com/dbconnections/signup`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        client_id: auth0Config.clientId,
+        email,
+        password,
+        connection: "Username-Password-Authentication",
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error Details:", errorData); // Log the error details
+      throw new Error("Registration failed");
+    }
+
+    const data = await response.json();
+    console.log("Registration Successful:", data);
+  } catch (error) {
+    console.error("Registration Error:", error);
+  }
+};
+
+const handleGoogleLogin = () => {
+  const googleLoginUrl = `https://planmytripai.uk.auth0.com/authorize?response_type=token&client_id=${auth0Config.clientId}&redirect_uri=${auth0Config.redirectUri}&connection=google-oauth2`;
+  window.location.href = googleLoginUrl;
+};
+
+const handleMicrosoftLogin = () => {
+  const microsoftLoginUrl = `https://${auth0Config.domain}/authorize?response_type=token&client_id=${auth0Config.clientId}&redirect_uri=http://localhost:3000/MainScreen&connection=windowslive&state=MainScreen`;
+  window.location.href = microsoftLoginUrl;
+};
+
 const LoginRegister: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [error, setError] = useState<string | null>(null); // State for error message
+  const router = useRouter();
 
   useEffect(() => {
     document.title = activeTab === "login" ? "Log In" : "Register";
 
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 5000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [activeTab]);
@@ -35,6 +113,23 @@ const LoginRegister: React.FC = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    setError(null); // Clear any previous error
+    handleLogin(email, password, router, setError); // Pass setError to handleLogin
+  };
+
+  const handleRegisterSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    handleRegister(email, password);
+  };
 
   return (
     <div className="relative w-screen h-screen flex flex-col bg-black text-white">
@@ -150,24 +245,45 @@ const LoginRegister: React.FC = () => {
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className="space-y-5"
+                onSubmit={handleLoginSubmit}
               >
                 <input 
                   type="email" 
+                  name="email"
                   placeholder="Email" 
                   required 
                   className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
                 />
                 <input 
                   type="password" 
+                  name="password"
                   placeholder="Password" 
                   required 
                   className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
                 />
+                {error && (
+                  <div className="text-red-600 text-sm font-bold text-center p-2 rounded-md">
+                    {error}
+                  </div>
+                )}
                 <button 
                   type="submit" 
-                  className="w-full py-3 bg-white text-black font-semibold rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300"
+                  className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition-all duration-300"
                 >
                   Log In
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={handleMicrosoftLogin}
+                  className="w-full py-3 bg-white text-black font-semibold rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 flex items-center justify-center space-x-2"
+                >
+                  <span>Login with Microsoft</span>
+                  <img
+                    src="/microsoftwow.png" // Replace with the path to your Microsoft logo
+                    alt="Microsoft Logo"
+                    className="w-5 h-5"
+                  />
                 </button>
               </motion.form>
             )}
@@ -180,27 +296,18 @@ const LoginRegister: React.FC = () => {
                 exit={{ opacity: 0, y: 5 }}
                 transition={{ duration: 0.15, ease: "easeOut" }}
                 className="space-y-5"
+                onSubmit={handleRegisterSubmit}
               >
                 <input 
-                  type="text" 
-                  placeholder="First Name" 
-                  required 
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
-                />
-                <input 
-                  type="text" 
-                  placeholder="Surname" 
-                  required 
-                  className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
-                />
-                <input 
                   type="email" 
+                  name="email"
                   placeholder="Email Address" 
                   required 
                   className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
                 />
                 <input 
                   type="password" 
+                  name="password"
                   placeholder="Password" 
                   required 
                   className="w-full px-4 py-3 rounded-lg bg-white/20 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition-all duration-300"
