@@ -158,10 +158,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     async function sendMessage(message: string) {
         // Add the user message to the chat
         const isFirstMessage = !Boolean(chat.length);
-        setChat(chat => [
-            ...chat,
-            { role: "user", content: message }
-        ]);
+        const messages = [...chat, { role: "user" as any, content: message }];
+        setChat(messages);
 
         // Send API call to the server to update travel details and generate a reply.
         try {
@@ -169,7 +167,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             let newTravelDetails: TravelDetails;
 
             if (!isFirstMessage) {
-                response = await axios.post('/api/updateTravelPlan', { messages: chat.map(message => message.content), travelDetails });
+                response = await axios.post('/api/updateTravelPlan', { messages: messages.map(message => message.content), travelDetails });
 
                 newTravelDetails = response.data.newTravelDetails;
                 setTravelDetails(newTravelDetails);
@@ -179,7 +177,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 newTravelDetails = response.data.newTravelDetails;
                 setTravelDetails(newTravelDetails);
             }
-            
+
             // If there aren't missing details, fetch some hotels.
             if (!hasNullValues(newTravelDetails)) {
                 try {
