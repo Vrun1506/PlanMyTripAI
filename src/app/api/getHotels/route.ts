@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const hotels = await searchHotels(destinations, travelDetails);
 
   try {
-    return NextResponse.json(hotels);
+    return NextResponse.json({ hotels });
   } catch (error) {
     console.error('Error searching hotels:', error);
     return NextResponse.json({ error: 'Error searching hotels' }, { status: 500 });

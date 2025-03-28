@@ -72,9 +72,7 @@ export async function searchHotels(destinations: { dest_id: string, dest_type: s
     };
 
     const { data } = await axios.request(options);
-    console.log("\n\n");
-    console.log(data.data);
-    console.log("\n\n")
+    console.log(data);
     return data.data.hotels;
   }
 
@@ -82,7 +80,7 @@ export async function searchHotels(destinations: { dest_id: string, dest_type: s
   const responses = await Promise.all(destinations.map(dest => searchRequest(dest.dest_id, dest.dest_type)));
   console.log("Number of responses for hotel selections: " + responses.length);
   const hotels = responses.map((response) => response[0]);
-  console.log(responses);
+  console.log(hotels);
 
   return hotels;
 }

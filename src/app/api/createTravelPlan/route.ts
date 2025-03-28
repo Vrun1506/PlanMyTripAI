@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         };
         rooms: number | null;
       },
-      "reply": string // A human friendly response to the user after changing their plan.
+      "reply": string // A human friendly response to the user after changing their plan. Make sure to include a follow up for one of the missing details if they have any.
     }
 
     `.trim()

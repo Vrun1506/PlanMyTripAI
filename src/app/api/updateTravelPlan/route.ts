@@ -1,14 +1,14 @@
-import { getGenerativeResponse } from '@/chat';
+import { getGenerativeResponseFromConversation } from '@/chat';
 import { NextResponse } from 'next/server';
 import { blankTravelDetails, TravelDetails } from '@/components/ChatContext';
 
 export async function POST(req: Request) {
-  const { message, travelDetails } = await req.json() as { message: string, travelDetails: TravelDetails };
+  const { messages, travelDetails } = await req.json() as { messages: string, travelDetails: TravelDetails };
 
-  const response = await getGenerativeResponse(`
+  const response = await getGenerativeResponseFromConversation([...messages.slice(0, messages.length - 2), `
     The user has provided the following message:
     
-    ${message}
+    ${messages[messages.length - 1]}
     
 
     The user also has the current travel plan:
@@ -47,10 +47,10 @@ export async function POST(req: Request) {
         };
         rooms: number | null;
       },
-      "reply": string // A human friendly response to the user after changing their plan.
+      "reply": string // A human friendly response to the user after changing their plan. Make sure to include a follow up for one of the missing details if they have any.
     }
 
-    `.trim()
+    `.trim()]
   );
 
   const regex = /[{\[]{1}([,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t]|".*?")+[}\]]{1}/gis;
