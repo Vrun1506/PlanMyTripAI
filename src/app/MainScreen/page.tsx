@@ -14,8 +14,9 @@ export default function MainScreen() {
   const [file, setFile] = useState<File | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [city, setCity] = useState<string | null>(null); // State to store the city name
 
-  //Whisper component
+  // Whisper component
   const SpeechAgent = async () => {
     try {
       // Request microphone access
@@ -65,7 +66,7 @@ export default function MainScreen() {
 
       mediaRecorder.start();
 
-      // Stop recording after 5 seconds
+      // Stop recording after 10 seconds
       setTimeout(() => {
         mediaRecorder.stop();
         stream.getTracks().forEach((track) => track.stop());
@@ -86,6 +87,12 @@ export default function MainScreen() {
   const handlePlanTrip = () => {
     setIsFlying(true);
     setTimeout(() => setShowImage(true), 1000); // Show image after 1 sec
+
+    // Upload the image to the Flask server if a file is selected
+    if (file) {
+      uploadImage(file);
+    }
+
     setTimeout(() => {
       setIsFlying(false);
       setShowImage(false);
@@ -94,32 +101,35 @@ export default function MainScreen() {
     }, 2500); // Reset after takeoff
   };
 
-  const handleUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = event.target.files?.[0];
     if (uploadedFile) {
       setFile(uploadedFile);
       console.log("Uploaded file:", uploadedFile);
+    }
+  };
 
-      // Create a FormData object to send the file
-      const formData = new FormData();
-      formData.append("image", uploadedFile);
+  const uploadImage = async (uploadedFile: File) => {
+    // Create a FormData object to send the file
+    const formData = new FormData();
+    formData.append("image", uploadedFile);
 
-      // Send the file to the backend
-      try {
-        const response = await fetch("http://localhost:5001/upload", {
-          method: "POST",
-          body: formData,
-        });
+    // Send the file to the Flask backend
+    try {
+      const response = await fetch("http://127.0.0.1:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to upload file");
-        }
-
-        const data = await response.json();
-        console.log("Uploaded file URL:", data.imageUrl); // Handle the uploaded file URL as needed
-      } catch (error) {
-        console.error("Error uploading file:", error);
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
       }
+
+      const data = await response.json();
+      console.log("City:", data.city); // Log the city name
+      setCity(data.city); // Set the city name in state
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
   };
 
@@ -190,15 +200,17 @@ export default function MainScreen() {
           </motion.ul>
         )}
       </nav>
-      <br></br>
-      <br></br>
-      <br></br>
+
+      <br />
+      <br />
+      <br />
+
       {/* Glassmorphic Card */}
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative w-full max-w-lg bg-white rounded-lg p-8 shadow-2xl mx-auto mt-20" // Center the dialog box
+        className="relative w-full max-w-lg bg-white rounded-lg p-8 shadow-2xl mx-auto mt-20"
       >
         {contentVisible ? (
           <>
@@ -215,7 +227,7 @@ export default function MainScreen() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Enter details about your dream trip..."
-                className="bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-lg outline-none text-black placeholder-gray-400 h-24 resize-none" // Resize is disabled
+                className="bg-gray-100 border border-gray-300 rounded-xl px-4 py-3 text-lg outline-none text-black placeholder-gray-400 h-24 resize-none"
               />
             </div>
 
@@ -223,7 +235,7 @@ export default function MainScreen() {
             <div className="flex justify-between items-center mb-4">
               <label className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 transition cursor-pointer">
                 <Image
-                  src="/uploadicon.png" // Update with the correct path
+                  src="/uploadicon.png"
                   alt="Upload"
                   width={32}
                   height={32}
@@ -235,13 +247,12 @@ export default function MainScreen() {
                   className="hidden"
                 />
               </label>
-              <button className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 transition ml-2">
+              <button className="flex items-center justify-center w-12 h-12 rounded-full bg-gray-200 hover:bg-gray-300 transition ml-2" onClick={SpeechAgent}>
                 <Image
-                  src="/speechicon.png" // Update with the correct path
+                  src="/speechicon.png"
                   alt="Voice"
                   width={32}
                   height={32}
-                  onClick={SpeechAgent}
                 />
               </button>
               <motion.button
@@ -251,7 +262,7 @@ export default function MainScreen() {
                 className="ml-auto w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md hover:bg-blue-700 transition-all"
               >
                 <Image
-                  src="/sendmessage.png" // Update with the correct path
+                  src="/sendmessage.png"
                   alt="Send Message"
                   width={32}
                   height={32}
@@ -269,7 +280,7 @@ export default function MainScreen() {
                   className="absolute left-1/2 bottom-20 transform -translate-x-1/2"
                 >
                   <Image
-                    src="/sendmessage.png" // Update with the correct path
+                    src="/sendmessage.png"
                     alt="Send Message"
                     width={80}
                     height={80}
@@ -282,6 +293,13 @@ export default function MainScreen() {
             {file && (
               <div className="mt-4 text-center">
                 <p>Uploaded file: {file.name}</p>
+              </div>
+            )}
+
+            {/* Displaying the detected city */}
+            {city && (
+              <div className="mt-4 text-center">
+                <p>Detected city: {city}</p>
               </div>
             )}
           </>
